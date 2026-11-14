@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <meta name="theme-color" content="#080d14">
+  <title>Team Manager | Admin</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="manifest" href="manifest.json">
+  <style>
+    .skill-tag { display: inline-block; background: var(--panel2); color: var(--cyan); border: 1px solid var(--border); padding: 6px 12px; border-radius: 20px; font-size: 12px; margin: 4px; }
+    .overview-section { margin-bottom: 20px; background: var(--bg); padding: 15px; border-radius: 10px; border: 1px solid var(--border); }
+    .overview-section h3 { font-size: 14px; margin-bottom: 10px; padding-bottom: 5px; border-bottom: 1px solid var(--border); }
+    .approved-title { color: var(--green); }
+    .pending-title { color: var(--yellow); }
+
+    /* CUSTOM MULTI-SELECT DESIGN */
+    .custom-select { position: relative; user-select: none; }
+    .custom-select-trigger {
+      width: 100%; background: var(--bg); border: 1px solid var(--border); color: var(--white);
+      padding: 13px; border-radius: 10px; font-size: 15px; min-height: 48px;
+      display: flex; justify-content: space-between; align-items: center; cursor: pointer;
+    }
+    .custom-select-trigger:after { content: '▼'; font-size: 10px; color: var(--muted); }
+    .custom-options {
+      display: none; position: absolute; top: 100%; left: 0; right: 0;
+      background: var(--panel); border: 1px solid var(--border); border-radius: 10px;
+      margin-top: 5px; z-index: 100; max-height: 200px; overflow-y: auto;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    }
+    .custom-select.open .custom-options { display: block; }
+    .custom-option {
+      padding: 12px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; cursor: pointer;
+    }
+    .custom-option:last-child { border-bottom: none; }
+    .custom-option input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--green); cursor: pointer; }
+    .custom-option label { margin: 0; font-size: 14px; color: var(--white); cursor: pointer; flex: 1; }
+  </style>
+</head>
+<body>
+
+<div id="lockScreen" style="position:fixed; inset:0; background:#080d14; z-index:9999; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:20px;">
+  <h2 style="color:#a5ff3f; margin-bottom:20px;">Admin Access</h2>
+  <input type="password" id="adminPassword" name="admin_pin_no_save" autocomplete="new-password" placeholder="Enter Password" style="max-width:300px; text-align:center; margin-bottom:15px; padding:12px; border-radius:8px; background:#0a121c; color:white; border:1px solid #263747; outline:none; width:100%;">
+  <button id="unlockBtn" style="max-width:300px; width:100%; background:#a5ff3f; color:#10180b; font-weight:bold; padding:12px; border:none; border-radius:8px; cursor:pointer;">Unlock</button>
+</div>
+
+<div id="mainApp" class="hidden">
+  <header class="topbar">
+    <div>
+      <h1>TEAM MANAGER</h1>
+      <p>ADMIN DASHBOARD</p>
+    </div>
+    <div class="top-actions">
+      <button id="adminBtn" class="icon-btn" title="Settings">⚙️</button>
+      <button id="themeBtn" class="icon-btn" title="Theme">🌙</button>
+      <button id="backupBtn" class="outline-btn">Backup</button>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="stats">
+      <div class="stat-card pending-stat"><span>Pending</span><strong id="pendingCount">0</strong></div>
+      <div class="stat-card approved-stat"><span>Approved</span><strong id="approvedCount">0</strong></div>
+      <div class="stat-card rejected-stat"><span>Rejected</span><strong id="rejectedCount">0</strong></div>
+    </section>
+
+    <section id="adminPanel" class="panel hidden">
+      <div class="section-heading">
+        <div><h2>Admin Settings</h2><p>Manage Services</p></div>
+      </div>
+      <label>Manage Services</label>
+      <div class="inline-fields">
+        <input id="newServiceAdmin" placeholder="New service name...">
+        <button type="button" id="addServiceAdminBtn" class="small-btn">Add</button>
+      </div>
+      <div id="adminServiceList" class="skill-list" style="margin-top: 10px; flex-direction: column; gap: 8px;"></div>
+    </section>
+
+    <section class="panel">
+      <div class="section-heading">
+        <div><h2>Auto-Fill from WhatsApp</h2><p>Paste candidate's text here to extract details</p></div>
+      </div>
+      <textarea id="pasteData" placeholder="Paste the text copied from WhatsApp here..." style="min-height: 120px; margin-bottom: 10px;"></textarea>
+      <button type="button" id="parseBtn" class="primary-btn" style="width: 100%;">Extract & Fill Form</button>
+    </section>
+
+    <section class="panel">
+      <div class="section-heading">
+        <div><h2 id="formTitle">Add Candidate</h2><p>Details record karo</p></div>
+      </div>
+
+      <form id="candidateForm">
+        <input type="hidden" id="editId">
+        
+        <label>Name *</label>
+        <input id="name" required maxlength="80" placeholder="Candidate ka naam">
+
+        <label>WhatsApp Number *</label>
+        <input id="whatsapp" required maxlength="15" placeholder="923001234567 (No spaces)">
+
+        <label>Services / Categories *</label>
+        
+        <div class="custom-select" id="serviceDropdown">
+          <div class="custom-select-trigger" id="serviceTrigger">Select Services...</div>
+          <div class="custom-options" id="serviceOptions">
+            <!-- Options JS se aayenge -->
+          </div>
+        </div>
+
+        <div id="clientHunterFields" class="hidden" style="background: rgba(165,255,63,0.05); padding: 10px; border-radius: 8px; border: 1px solid var(--green); margin-top: 10px;">
+          <label style="color: var(--green);">Project Size & Commission</label>
+          <select id="projectSize">
+            <option value="Small Project (20%)">Small Project (20%)</option>
+            <option value="Big Project (30%)">Big Project (30%)</option>
+          </select>
+        </div>
+
+        <label>Skills / Expertise *</label>
+        <textarea id="skills" required maxlength="500" placeholder="HTML, Cold Calling, etc..."></textarea>
+
+        <label>Portfolio / Work Link</label>
+        <input id="portfolio" type="url" maxlength="200" placeholder="https://example.com">
+
+        <label>Availability</label>
+        <select id="availability">
+          <option value="Project Base">Project Base</option>
+        </select>
+
+        <label>Additional Details / Notes</label>
+        <textarea id="notes" maxlength="1500" placeholder="Important details..."></textarea>
+
+        <div class="form-actions">
+          <button type="submit" id="saveBtn" class="primary-btn">Save Candidate</button>
+          <button type="button" id="cancelEdit" class="outline-btn hidden">Cancel</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="panel">
+      <div class="section-heading">
+        <div><h2>Candidate Records</h2><p>Filter and manage candidates</p></div>
+      </div>
+
+      <input id="searchInput" type="search" placeholder="Search by name, skill, or service...">
+      <div class="filter-row">
+        <select id="serviceFilter"><option value="">All Services</option></select>
+      </div>
+
+      <div class="tabs">
+        <button class="tab active" data-tab="Pending">Pending <span id="tabPending">0</span></button>
+        <button class="tab" data-tab="Approved">Approved <span id="tabApproved">0</span></button>
+        <button class="tab" data-tab="Rejected">Rejected <span id="tabRejected">0</span></button>
+      </div>
+
+      <div id="candidateList"></div>
+    </section>
+
+    <section class="panel">
+      <div class="section-heading">
+        <div><h2>Team Skills Overview</h2><p>Hamari team kya kya kar sakti hai (Rejected nahi hain)</p></div>
+      </div>
+      
+      <div class="overview-section">
+        <h3 class="approved-title">✅ Approved Team Skills</h3>
+        <div id="approvedSkillsList" class="skill-list"><span style="color:var(--muted); font-size:12px;">No approved candidates yet.</span></div>
+      </div>
+
+      <div class="overview-section">
+        <h3 class="pending-title">⏳ Pending Team Skills</h3>
+        <div id="pendingSkillsList" class="skill-list"><span style="color:var(--muted); font-size:12px;">No pending candidates yet.</span></div>
+      </div>
+    </section>
+
+    <section class="panel backup-panel">
+      <h2>Data Backup</h2>
+      <div class="backup-actions">
+        <button id="exportBtn" class="primary-btn">Download Backup</button>
+        <label class="import-btn">Restore Backup<input type="file" id="importInput" accept=".json" hidden></label>
+        <button id="exportCsvBtn" class="outline-btn">Export CSV</button>
+      </div>
+      <p class="warning-text">Data browser mein save hota hai. Regular backup zaroor lo.</p>
+    </section>
+  </main>
+</div>
+
+<div id="toast" class="toast"></div>
+<div id="modalRoot"></div>
+
+<script type="module" src="js/app.js"></script>
+</body>
+                                                                  </html>
