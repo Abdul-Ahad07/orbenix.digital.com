@@ -10,9 +10,6 @@
     .success-box { background: var(--panel); border: 1px solid var(--green); padding: 20px; border-radius: 12px; text-align: center; margin-top: 20px;}
     .success-box h2 { color: var(--green); margin-bottom: 10px; }
     .success-box p { color: var(--muted); font-size: 14px; margin-bottom: 15px;}
-    #previewText { background: var(--bg); padding: 10px; border-radius: 8px; font-size: 12px; color: var(--white); text-align: left; white-space: pre-wrap; margin-bottom: 15px; font-family: monospace;}
-    
-    /* Custom Dropdown */
     .custom-select { position: relative; user-select: none; }
     .custom-select-trigger {
       width: 100%; background: var(--bg); border: 1px solid var(--border); color: var(--white);
@@ -61,37 +58,24 @@
       
       <div class="custom-select" id="serviceDropdown">
         <div class="custom-select-trigger" id="serviceTrigger">Select Services...</div>
-        <div class="custom-options">
-          <label class="custom-option"><input type="checkbox" value="Client Hunting"> Client Hunting (Top Priority)</label>
-          <label class="custom-option"><input type="checkbox" value="Website Development"> Website Development</label>
-          <label class="custom-option"><input type="checkbox" value="WordPress Development"> WordPress Development</label>
-          <label class="custom-option"><input type="checkbox" value="App Development"> App Development</label>
-          <label class="custom-option"><input type="checkbox" value="AI Agent Development"> AI Agent Development</label>
-          <label class="custom-option"><input type="checkbox" value="Business Automation"> Business Automation</label>
-          <label class="custom-option"><input type="checkbox" value="Graphic Design"> Graphic Design</label>
-          <label class="custom-option"><input type="checkbox" value="UI/UX Design"> UI/UX Design</label>
-          <label class="custom-option"><input type="checkbox" value="Video Editing"> Video Editing</label>
-          <label class="custom-option"><input type="checkbox" value="Digital Marketing"> Digital Marketing</label>
-          <label class="custom-option"><input type="checkbox" value="SEO"> SEO</label>
-          <label class="custom-option"><input type="checkbox" value="Social Media Management"> Social Media Management</label>
-          <label class="custom-option"><input type="checkbox" value="Content Writing"> Content Writing</label>
-          <label class="custom-option"><input type="checkbox" value="Copywriting"> Copywriting</label>
-          <label class="custom-option"><input type="checkbox" value="Virtual Assistant"> Virtual Assistant</label>
-          <label class="custom-option"><input type="checkbox" value="Data Entry"> Data Entry</label>
-          <label class="custom-option"><input type="checkbox" value="Lead Generation"> Lead Generation</label>
-        </div>
+        <div class="custom-options" id="serviceOptions"></div>
+      </div>
+
+      <div id="otherServiceBox" class="hidden" style="margin-top: 10px;">
+        <label>Apni Service Likhein *</label>
+        <input id="p_other_service" placeholder="E.g., Voice Over Artist">
+      </div>
+
+      <div id="otherDescriptionBox" class="hidden" style="margin-top: 10px;">
+        <label>Service Description *</label>
+        <textarea id="p_other_description" placeholder="Is service ke baare mein thoda likhein..."></textarea>
       </div>
 
       <div id="clientHunterFields" class="hidden" style="background: rgba(165,255,63,0.05); padding: 10px; border-radius: 8px; border: 1px solid var(--green); margin-top: 10px;">
         <label style="color: var(--green); margin-top: 0;">Project Size & Commission</label>
-          <p style="font-size: 13px; color: var(--white); margin-bottom: 5px;">Small Project (20% Commission)</p>
-          <p style="font-size: 13px; color: var(--white);">Big Project (30% Commission)</p>
+        <p style="font-size: 13px; color: var(--white); margin-bottom: 5px;">Small Project (20% Commission)</p>
+        <p style="font-size: 13px; color: var(--white);">Big Project (30% Commission)</p>
       </div>
-
-      <label>Availability</label>
-      <select id="p_availability">
-        <option value="Project Base" selected>Project Base</option>
-      </select>
 
       <label>Skills / Expertise *</label>
       <textarea id="p_skills" required placeholder="Your skills..."></textarea>
@@ -99,109 +83,121 @@
       <label>Portfolio / LinkedIn Link</label>
       <input id="p_portfolio" type="url" placeholder="https://...">
 
-      <label>Notes</label>
-      <textarea id="p_notes" placeholder="Additional info..."></textarea>
-
       <div class="form-actions">
-        <button type="submit" class="primary-btn">Submit & Send to Admin</button>
+        <button type="submit" class="primary-btn" id="submitBtn">Submit Details</button>
       </div>
     </form>
   </section>
 
   <section class="panel hidden" id="successSection">
     <div class="success-box">
-      <h2>✅ Data Ready!</h2>
-      <p>Click the button below to send this data to Admin via WhatsApp.</p>
-      <div id="previewText"></div>
-      <a id="waSendBtn" href="#" target="_blank" class="primary-btn" style="display:block; text-decoration:none; margin-bottom:10px; text-align:center; padding:12px;">Send via WhatsApp</a>
-      <button id="copyBtn" class="outline-btn" style="width:100%;">Copy Details</button>
+      <h2>✅ Data Sent to Admin!</h2>
+      <p>Aapki details Admin ke paas chali gayi hain. Wo jald aap se raabta karenge.</p>
     </div>
   </section>
 </main>
 
-<script>
-  const ADMIN_WA_NUMBER = "923144005234"; 
+<!-- Firebase SDK -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+  import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyClHhAxud7pTAL83KYiMVn4YzyaE3Wp4jM",
+    authDomain: "leaders-group-1.firebaseapp.com",
+    projectId: "leaders-group-1",
+    storageBucket: "leaders-group-1.firebasestorage.app",
+    messagingSenderId: "587720374151",
+    appId: "1:587720374151:web:e4c57fde402ba920354522"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  const defaultServices = ["Client Hunting", "Website Development", "WordPress Development", "App Development", "AI Agent Development", "Business Automation", "Graphic Design", "UI/UX Design", "Video Editing", "Digital Marketing", "SEO", "Social Media Management", "Content Writing", "Copywriting", "Virtual Assistant", "Data Entry", "Lead Generation"];
   
   const form = document.getElementById('publicForm');
-  const formSection = document.getElementById('formSection');
-  const successSection = document.getElementById('successSection');
-  
   const dropdown = document.getElementById('serviceDropdown');
   const trigger = document.getElementById('serviceTrigger');
-  const checkboxes = document.querySelectorAll('.custom-options input[type="checkbox"]');
-  
+  const optionsContainer = document.getElementById('serviceOptions');
   const clientHunterFields = document.getElementById('clientHunterFields');
-  const availabilityFields = document.getElementById('availabilityFields');
+  const otherServiceBox = document.getElementById('otherServiceBox');
+  const otherDescriptionBox = document.getElementById('otherDescriptionBox');
+
+  let optionsHTML = defaultServices.map(s => `<label class="custom-option"><input type="checkbox" value="${s}"> ${s}</label>`).join("");
+  optionsHTML += `<label class="custom-option"><input type="checkbox" value="Other" id="chkOther"> Other (Apni service likhein)</label>`;
+  optionsContainer.innerHTML = optionsHTML;
+
+  const checkboxes = document.querySelectorAll('#serviceOptions input[type="checkbox"]');
+  const chkOther = document.getElementById('chkOther');
 
   trigger.addEventListener('click', () => dropdown.classList.toggle('open'));
-
-  document.addEventListener('click', (e) => {
-    if (!dropdown.contains(e.target)) dropdown.classList.remove('open');
-  });
+  document.addEventListener('click', (e) => { if (!dropdown.contains(e.target)) dropdown.classList.remove('open'); });
 
   checkboxes.forEach(cb => {
     cb.addEventListener('change', () => {
       const selected = Array.from(checkboxes).filter(c => c.checked).map(c => c.value);
-      
       if (selected.length === 0) trigger.textContent = "Select Services...";
       else if (selected.length === 1) trigger.textContent = selected[0];
       else trigger.textContent = `${selected.length} Services Selected`;
       
-      if (selected.includes("Client Hunting")) {
-        clientHunterFields.classList.remove('hidden');
-        availabilityFields.classList.add('hidden');
+      if (selected.includes("Client Hunting")) clientHunterFields.classList.remove('hidden');
+      else clientHunterFields.classList.add('hidden');
+
+      if (chkOther.checked) {
+        otherServiceBox.classList.remove('hidden');
+        otherDescriptionBox.classList.remove('hidden');
       } else {
-        clientHunterFields.classList.add('hidden');
-        availabilityFields.classList.remove('hidden');
+        otherServiceBox.classList.add('hidden');
+        otherDescriptionBox.classList.add('hidden');
       }
     });
   });
 
-  form.addEventListener('submit', (e) => {
+  form.addEventListener('submit', async (e) => {
     e.preventDefault();
+    document.getElementById("submitBtn").textContent = "Sending...";
+    document.getElementById("submitBtn").disabled = true;
     
-    const selectedServices = Array.from(checkboxes).filter(c => c.checked).map(c => c.value);
+    let selectedServices = Array.from(checkboxes).filter(c => c.checked).map(c => c.value);
     if (selectedServices.length === 0) {
       alert("Kam az kam ek service select karein!");
+      document.getElementById("submitBtn").textContent = "Submit Details";
+      document.getElementById("submitBtn").disabled = false;
       return;
     }
 
-    const isClientHunter = selectedServices.includes("Client Hunting");
+    if (chkOther.checked) {
+      const otherText = document.getElementById('p_other_service').value.trim();
+      const otherDesc = document.getElementById('p_other_description').value.trim();
+      if (!otherText || !otherDesc) {
+        alert("Apni service aur description likhein!");
+        document.getElementById("submitBtn").textContent = "Submit Details";
+        document.getElementById("submitBtn").disabled = false;
+        return;
+      }
+      selectedServices = selectedServices.filter(s => s !== "Other");
+      selectedServices.push(otherText + " (" + otherDesc + ")");
+    }
 
-    const data = {
-      Name: document.getElementById('p_name').value,
-      WhatsApp: document.getElementById('p_whatsapp').value.replace(/\D/g, ''),
-      Service: selectedServices.join(", "),
-      ProjectSize: isClientHunter ? "As per project size" : "Project Base",
-      Availability: "Project Base", 
-      Skills: document.getElementById('p_skills').value,
-      Portfolio: document.getElementById('p_portfolio').value || "None",
-      Notes: document.getElementById('p_notes').value || "None"
-    };
-
-    const textToSend = 
-`Name: ${data.Name}
-WhatsApp: ${data.WhatsApp}
-Service: ${data.Service}
-ProjectSize: ${data.ProjectSize}
-Availability: ${data.Availability}
-Skills: ${data.Skills}
-Portfolio: ${data.Portfolio}
-Notes: ${data.Notes}`;
-
-    document.getElementById('previewText').textContent = textToSend;
-    const waUrl = `https://wa.me/${ADMIN_WA_NUMBER}?text=${encodeURIComponent(textToSend)}`;
-    document.getElementById('waSendBtn').href = waUrl;
-
-    document.getElementById('copyBtn').onclick = () => {
-      navigator.clipboard.writeText(textToSend).then(() => {
-        document.getElementById('copyBtn').textContent = "Copied!";
-        setTimeout(() => document.getElementById('copyBtn').textContent = "Copy Details", 2000);
+    try {
+      await addDoc(collection(db, "candidates"), {
+        name: document.getElementById('p_name').value,
+        whatsapp: document.getElementById('p_whatsapp').value.replace(/\D/g, ''),
+        service: selectedServices.join(", "),
+        skills: document.getElementById('p_skills').value,
+        portfolio: document.getElementById('p_portfolio').value || "None",
+        status: "Pending",
+        timestamp: new Date()
       });
-    };
-
-    formSection.classList.add('hidden');
-    successSection.classList.remove('hidden');
+      
+      document.getElementById('formSection').classList.add('hidden');
+      document.getElementById('successSection').classList.remove('hidden');
+    } catch (error) {
+      alert("Data send nahi hua. Internet check karein.");
+      document.getElementById("submitBtn").textContent = "Submit Details";
+      document.getElementById("submitBtn").disabled = false;
+    }
   });
 </script>
 </body>
