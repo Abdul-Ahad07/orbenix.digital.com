@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <meta name="theme-color" content="#080d14">
+  <title>Admin | Leaders Group Digital</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .skill-tag { display: inline-block; background: var(--panel2); color: var(--cyan); border: 1px solid var(--border); padding: 6px 12px; border-radius: 20px; font-size: 12px; margin: 4px; }
+    .overview-section { margin-bottom: 20px; background: var(--bg); padding: 15px; border-radius: 10px; border: 1px solid var(--border); }
+    .overview-section h3 { font-size: 14px; margin-bottom: 10px; padding-bottom: 5px; border-bottom: 1px solid var(--border); }
+    .approved-title { color: var(--green); }
+    .pending-title { color: var(--yellow); }
+
+    /* Custom Dropdown */
+    .custom-select { position: relative; user-select: none; }
+    .custom-select-trigger {
+      width: 100%; background: var(--bg); border: 1px solid var(--border); color: var(--white);
+      padding: 13px; border-radius: 10px; font-size: 15px; min-height: 48px;
+      display: flex; justify-content: space-between; align-items: center; cursor: pointer;
+    }
+    .custom-select-trigger:after { content: '▼'; font-size: 10px; color: var(--muted); }
+    .custom-options {
+      display: none; position: absolute; top: 100%; left: 0; right: 0;
+      background: var(--panel); border: 1px solid var(--border); border-radius: 10px;
+      margin-top: 5px; z-index: 100; max-height: 200px; overflow-y: auto;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    }
+    .custom-select.open .custom-options { display: block; }
+    .custom-option {
+      padding: 12px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; cursor: pointer;
+    }
+    .custom-option:last-child { border-bottom: none; }
+    .custom-option input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--green); cursor: pointer; }
+    .custom-option label { margin: 0; font-size: 14px; color: var(--white); cursor: pointer; flex: 1; }
+  </style>
+</head>
+<body>
+
+<!-- LOCK SCREEN -->
+<div id="lockScreen" style="position:fixed; inset:0; background:#080d14; z-index:9999; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:20px;">
+  <h2 style="color:#a5ff3f; margin-bottom:20px;">Admin Access</h2>
+  <input type="password" id="adminPassword" name="admin_pin_no_save" autocomplete="new-password" placeholder="Enter Password" style="max-width:300px; text-align:center; margin-bottom:15px; padding:12px; border-radius:8px; background:#0a121c; color:white; border:1px solid #263747; outline:none; width:100%;">
+  <button id="unlockBtn" style="max-width:300px; width:100%; background:#a5ff3f; color:#10180b; font-weight:bold; padding:12px; border:none; border-radius:8px; cursor:pointer;">Unlock</button>
+</div>
+
+<!-- MAIN APP -->
+<div id="mainApp" class="hidden">
+  <header class="topbar">
+    <div><h1>LEADERS GROUP DIGITAL</h1><p>ADMIN DASHBOARD</p></div>
+    <div class="top-actions">
+      <button id="adminBtn" class="icon-btn" title="Settings">⚙️</button>
+      <button id="backupBtn" class="outline-btn">Backup</button>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="stats">
+      <div class="stat-card pending-stat"><span>Pending</span><strong id="pendingCount">0</strong></div>
+      <div class="stat-card approved-stat"><span>Approved</span><strong id="approvedCount">0</strong></div>
+      <div class="stat-card rejected-stat"><span>Rejected</span><strong id="rejectedCount">0</strong></div>
+    </section>
+
+    <section id="adminPanel" class="panel hidden">
+      <div class="section-heading">
+        <div><h2>Admin Settings</h2><p>Manage Services</p></div>
+      </div>
+      <label>Manage Services</label>
+      <div class="inline-fields">
+        <input id="newServiceAdmin" placeholder="New service name...">
+        <button type="button" id="addServiceAdminBtn" class="small-btn">Add</button>
+      </div>
+      <div id="adminServiceList" class="skill-list" style="margin-top: 10px; flex-direction: column; gap: 8px;"></div>
+    </section>
+
+    <section class="panel">
+      <div class="section-heading">
+        <div><h2>Auto-Fill from WhatsApp</h2><p>Paste text here to extract details</p></div>
+      </div>
+      <textarea id="pasteData" placeholder="Paste text here..." style="min-height: 120px; margin-bottom: 10px;"></textarea>
+      <button type="button" id="parseBtn" class="primary-btn" style="width: 100%;">Extract & Fill Form</button>
+    </section>
+
+    <section class="panel">
+      <div class="section-heading">
+        <div><h2>Add / Edit Candidate</h2></div>
+      </div>
+      <form id="candidateForm">
+        <input type="hidden" id="editId">
+        <label>Name *</label>
+        <input id="name" required maxlength="80" placeholder="Candidate name">
+        <label>WhatsApp Number *</label>
+        <input id="whatsapp" required maxlength="15" placeholder="923001234567">
+        
+        <label>Services *</label>
+        <div class="custom-select" id="adminServiceDropdown">
+          <div class="custom-select-trigger" id="adminServiceTrigger">Select Services...</div>
+          <div class="custom-options" id="adminServiceOptions"></div>
+        </div>
+
+        <div id="clientHunterFields" class="hidden" style="background: rgba(165,255,63,0.05); padding: 10px; border-radius: 8px; border: 1px solid var(--green); margin-top: 10px;">
+          <label style="color: var(--green);">Project Size & Commission</label>
+          <select id="projectSize">
+            <option value="Small Project (20%)">Small Project (20%)</option>
+            <option value="Big Project (30%)">Big Project (30%)</option>
+          </select>
+        </div>
+
+        <label>Skills *</label>
+        <textarea id="skills" required maxlength="500" placeholder="Skills comma separated"></textarea>
+
+        <label>Portfolio Link</label>
+        <input id="portfolio" type="url" maxlength="200" placeholder="https://example.com">
+
+        <label>Availability</label>
+        <select id="availability"><option value="Project Base" selected>Project Base</option></select>
+
+        <label>Notes</label>
+        <textarea id="notes" maxlength="1500" placeholder="Details..."></textarea>
+
+        <div class="form-actions">
+          <button type="submit" id="saveBtn" class="primary-btn">Save</button>
+          <button type="button" id="cancelEdit" class="outline-btn hidden">Cancel</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="panel">
+      <div class="section-heading"><div><h2>Records</h2></div></div>
+      <div class="tabs">
+        <button class="tab active" data-tab="Pending">Pending <span id="tabPending">0</span></button>
+        <button class="tab" data-tab="Approved">Approved <span id="tabApproved">0</span></button>
+        <button class="tab" data-tab="Rejected">Rejected <span id="tabRejected">0</span></button>
+      </div>
+      <div id="candidateList"></div>
+    </section>
+
+    <section class="panel">
+      <div class="section-heading">
+        <div><h2>Team Skills Overview</h2><p>Rejected walay nahi hain</p></div>
+      </div>
+      <div class="overview-section">
+        <h3 class="approved-title">✅ Approved Team Skills</h3>
+        <div id="approvedSkillsList" class="skill-list"></div>
+      </div>
+      <div class="overview-section">
+        <h3 class="pending-title">⏳ Pending Team Skills</h3>
+        <div id="pendingSkillsList" class="skill-list"></div>
+      </div>
+    </section>
+
+    <section class="panel backup-panel">
+      <h2>Data Backup</h2>
+      <div class="backup-actions">
+        <button id="exportBtn" class="primary-btn">Download Backup</button>
+        <label class="import-btn">Restore<input type="file" id="importInput" accept=".json" hidden></label>
+        <button id="exportCsvBtn" class="outline-btn">Export CSV</button>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div id="toast" class="toast"></div>
+<div id="modalRoot"></div>
+
+<script>
+  const ADMIN_PASSWORD = "JA@1"; 
+  let state = { candidates: [], services: ["Client Hunting", "Website Development", "WordPress Development", "App Development", "AI Agent Development", "Business Automation", "Graphic Design", "UI/UX Design", "Video Editing", "Digital Marketing", "SEO", "Social Media Management", "Content Writing", "Copywriting", "Virtual Assistant", "Data Entry", "Lead Generation"], activeTab: "Pending" };
+
+  // UNLOCK
+  document.getElementById("unlockBtn").addEventListener("click", () => {
+    const pwd = document.getElementById("adminPassword").value;
+    if (pwd === ADMIN_PASSWORD) {
+      sessionStorage.setItem("cwaa_logged", "true");
+      document.getElementById("lockScreen").classList.add("hidden");
+      document.getElementById("mainApp").classList.remove("hidden");
+      initApp();
+    } else {
+      alert("Galat Password! (Hint: JA@1)");
+    }
+  });
+
+  document.getElementById("adminPassword").addEventListener("keydown", (e) => {
+    if (e.key === "Enter") document.getElementById("unlockBtn").click();
+  });
+
+  if (sessionStorage.getItem("cwaa_logged") === "true") {
+    document.getElementById("lockScreen").classList.add("hidden");
+    document.getElementById("mainApp").classList.remove("hidden");
+    initApp();
+  }
+
+  function initApp() {
+    loadData();
+    renderServices();
+    renderAdminLists();
+    renderAll();
+    bindEvents();
+    renderOverviewSkills();
+  }
+
+  function loadData() {
+    const savedCandidates = localStorage.getItem("cwaa_candidates");
+    const savedServices = localStorage.getItem("cwaa_services");
+    if (savedCandidates) state.candidates = JSON.parse(savedCandidates);
+    if (savedServices) state.services = JSON.parse(savedServices);
+  }
+
+  function saveData() {
+    localStorage.setItem("cwaa_candidates", JSON.stringify(state.candidates));
+    localStorage.setItem("cwaa_services", JSON.stringify(state.services));
+  }
+
+  function renderServices() {
+    const optionsContainer = document.getElementById("adminServiceOptions");
+    if (optionsContainer) {
+      optionsContainer.innerHTML = state.services.map(s => `
+        <label class="custom-option"><input type="checkbox" value="${s}"> ${s}</label>
+      `).join("");
+      
+      const checkboxes = document.querySelectorAll('#adminServiceOptions input[type="checkbox"]');
+      checkboxes.forEach(cb => {
+        cb.onchange = () => {
+          const selected = Array.from(checkboxes).filter(c => c.checked).map(c => c.value);
+          const trigger = document.getElementById("adminServiceTrigger");
+          if (selected.length === 0) trigger.textContent = "Select Services...";
+          else if (selected.length === 1) trigger.textContent = selected[0];
+          else trigger.textContent = `${selected.length} Selected`;
+          toggleClientHunterFields();
+        };
+      });
+      
+      document.getElementById("adminServiceTrigger").onclick = () => document.getElementById("adminServiceDropdown").classList.toggle("open");
+      document.addEventListener('click', (e) => {
+        const drop = document.getElementById("adminServiceDropdown");
+        if (drop && !drop.contains(e.target)) drop.classList.remove("open");
+      });
+    }
+  }
+
+  function renderAdminLists() {
+    const svcList = document.getElementById("adminServiceList");
+    if (!svcList) return;
+    svcList.innerHTML = state.services.map(s => `
+      <div class="skill" style="width:100%; display:flex; justify-content:space-between; align-items:center; padding:10px 12px; font-size:12px; margin-bottom:5px;">
+        <span>${s}</span>
+        <button type="button" onclick="removeService('${s}')" style="color:var(--red); background:none; border:none; font-size:18px; cursor:pointer;">&times;</button>
+      </div>
+    `).join("");
+  }
+
+  window.removeService = function(name) {
+    if(confirm(`Delete "${name}"?`)) {
+      state.services = state.services.filter(s => s !== name);
+      saveData(); renderServices(); renderAdminLists();
+    }
+  }
+
+  function toggleClientHunterFields() {
+    const fields = document.getElementById("clientHunterFields");
+    const checkboxes = document.querySelectorAll('#adminServiceOptions input[type="checkbox"]');
+    if (!fields || !checkboxes.length) return;
+    const selected = Array.from(checkboxes).filter(c => c.checked).map(c => c.value);
+    if (selected.includes("Client Hunting")) fields.classList.remove("hidden");
+    else fields.classList.add("hidden");
+  }
+
+  function renderStats() {
+    const pending = state.candidates.filter(c => !["Approved","Rejected"].includes(c.status));
+    const approved = state.candidates.filter(c => c.status === "Approved");
+    const rejected = state.candidates.filter(c => c.status === "Rejected");
+
+    document.getElementById("pendingCount").textContent = pending.length;
+    document.getElementById("approvedCount").textContent = approved.length;
+    document.getElementById("rejectedCount").textContent = rejected.length;
+
+    document.getElementById("tabPending").textContent = pending.length;
+    document.getElementById("tabApproved").textContent = approved.length;
+    document.getElementById("tabRejected").textContent = rejected.length;
+  }
+
+  function renderAll() {
+    renderStats();
+    const list = document.getElementById("candidateList");
+    
+    const filtered = state.candidates.filter(c => {
+      return state.activeTab === "Pending" ? !["Approved","Rejected"].includes(c.status) : c.status === state.activeTab;
+    });
+
+    if (!filtered.length) {
+      list.innerHTML = `<div class="empty-state">No candidates found.</div>`;
+      return;
+    }
+
+    list.innerHTML = filtered.map(c => `
+      <article class="candidate-card" data-id="${c.id}">
+        <div class="candidate-top">
+          <div>
+            <h3>${c.name}</h3>
+            <div class="candidate-meta">📞 +${c.whatsapp}</div>
+          </div>
+          <span class="status ${c.status}">${c.status}</span>
+        </div>
+        <div style="margin: 8px 0; font-size: 12px;">
+          <strong style="color:var(--yellow);">${c.service}</strong>
+          ${c.projectSize ? `<span style="background:var(--panel2); padding:2px 6px; border-radius:4px; margin-left:5px; font-size:10px;">${c.projectSize}</span>` : ""}
+        </div>
+        <div class="skill-list">${(c.skills||[]).map(s => `<span class="skill">${s}</span>`).join("")}</div>
+        <div class="card-actions">
+          <a href="https://wa.me/${c.whatsapp}" target="_blank" class="approve-btn" style="text-decoration:none; text-align:center;">WhatsApp</a>
+          ${c.status !== "Approved" ? `<button class="approve-btn" onclick="updateStatus('${c.id}','Approved')">Approve</button>` : ""}
+          ${c.status !== "Rejected" ? `<button class="reject-btn" onclick="updateStatus('${c.id}','Rejected')">Reject</button>` : ""}
+          <button class="edit-btn" onclick="editCandidate('${c.id}')">Edit</button>
+          <button class="delete-btn" onclick="deleteCandidate('${c.id}')">Delete</button>
+        </div>
+      </article>
+    `).join("");
+  }
+
+  window.updateStatus = function(id, status) {
+    const c = state.candidates.find(x => x.id === id);
+    if(c) { c.status = status; saveData(); renderAll(); renderOverviewSkills(); }
+  }
+
+  window.deleteCandidate = function(id) {
+    if(confirm("Delete this record?")) {
+      state.candidates = state.candidates.filter(x => x.id !== id);
+      saveData(); renderAll(); renderOverviewSkills();
+    }
+  }
+
+  window.editCandidate = function(id) {
+    const c = state.candidates.find(x => x.id === id);
+    if(!c) return;
+    document.getElementById("editId").value = c.id;
+    document.getElementById("name").value = c.name;
+    document.getElementById("whatsapp").value = c.whatsapp;
+    document.getElementById("skills").value = (c.skills||[]).join(", ");
+    document.getElementById("portfolio").value = c.portfolio || "";
+    document.getElementById("notes").value = c.notes || "";
+    
+    const servicesArr = c.service.split(',').map(s => s.trim());
+    const checkboxes = document.querySelectorAll('#adminServiceOptions input[type="checkbox"]');
+    checkboxes.forEach(cb => cb.checked = servicesArr.includes(cb.value));
+    
+    const selected = Array.from(checkboxes).filter(c => c.checked).map(c => c.value);
+    const trigger = document.getElementById("adminServiceTrigger");
+    if (selected.length === 0) trigger.textContent = "Select Services...";
+    else if (selected.length === 1) trigger.textContent = selected[0];
+    else trigger.textContent = `${selected.length} Selected`;
+
+    toggleClientHunterFields();
+    if(servicesArr.includes("Client Hunting")) document.getElementById("projectSize").value = c.projectSize;
+    
+    document.getElementById("saveBtn").textContent = "Update";
+    document.getElementById("cancelEdit").classList.remove("hidden");
+    window.scrollTo({top:0, behavior:"smooth"});
+  }
+
+  function renderOverviewSkills() {
+    const approvedDiv = document.getElementById("approvedSkillsList");
+    const pendingDiv = document.getElementById("pendingSkillsList");
+    const getSkills = (status) => {
+      const set = new Set();
+      state.candidates.filter(c => c.status === status).forEach(c => {
+        if(c.service) c.service.split(',').forEach(s => { if(s.trim()) set.add(s.trim()); });
+      });
+      return set.size === 0 ? `<span style="color:var(--muted); font-size:12px;">None</span>` : Array.from(set).map(s => `<span class="skill-tag">${s}</span>`).join("");
+    };
+    approvedDiv.innerHTML = getSkills("Approved");
+    pendingDiv.innerHTML = getSkills("Pending");
+  }
+
+  function bindEvents() {
+    document.getElementById("adminBtn").onclick = () => document.getElementById("adminPanel").classList.toggle("hidden");
+    
+    document.getElementById("addServiceAdminBtn").onclick = () => {
+      const val = document.getElementById("newServiceAdmin").value.trim();
+      if(val && !state.services.includes(val)) {
+        state.services.push(val); saveData(); renderServices(); renderAdminLists(); document.getElementById("newServiceAdmin").value = "";
+      }
+    }
+
+    document.querySelectorAll(".tab").forEach(btn => {
+      btn.onclick = () => {
+        document.querySelectorAll(".tab").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        state.activeTab = btn.dataset.tab;
+        renderAll();
+      }
+    });
+
+    document.getElementById("parseBtn").onclick = () => {
+      const raw = document.getElementById("pasteData").value.trim();
+      if (!raw) return;
+      const getVal = (key) => {
+        const line = raw.split('\n').find(l => l.toLowerCase().startsWith(key.toLowerCase() + ':'));
+        return line ? line.split(':').slice(1).join(':').trim() : "";
+      };
+      
+      document.getElementById("name").value = getVal("Name");
+      document.getElementById("whatsapp").value = getVal("WhatsApp");
+      document.getElementById("skills").value = getVal("Skills");
+      document.getElementById("portfolio").value = getVal("Portfolio") === "None" ? "" : getVal("Portfolio");
+      document.getElementById("notes").value = getVal("Notes") === "None" ? "" : getVal("Notes");
+
+      const servicesArr = getVal("Service").split(',').map(s => s.trim());
+      const checkboxes = document.querySelectorAll('#adminServiceOptions input[type="checkbox"]');
+      checkboxes.forEach(cb => cb.checked = servicesArr.includes(cb.value));
+      
+      const selected = Array.from(checkboxes).filter(c => c.checked).map(c => c.value);
+      const trigger = document.getElementById("adminServiceTrigger");
+      if (selected.length === 0) trigger.textContent = "Select Services...";
+      else if (selected.length === 1) trigger.textContent = selected[0];
+      else trigger.textContent = `${selected.length} Selected`;
+
+      toggleClientHunterFields();
+      document.getElementById("pasteData").value = "";
+      alert("Auto-filled!");
+    }
+
+    document.getElementById("candidateForm").onsubmit = (e) =    document.getElementById("candidateForm").onsubmit = (e) => {
+      e.preventDefault();
+      const editId = document.getElementById("editId").value;
+      const checkboxes = document.querySelectorAll('#adminServiceOptions input[type="checkbox"]');
+      const selectedServices = Array.from(checkboxes).filter(c => c.checked).map(c => c.value);
+      
+      if(selectedServices.length === 0) return alert("Kam az kam ek service select karein!");
+
+      const c = {
+        id: editId || Date.now().toString(),
+        name: document.getElementById("name").value,
+        whatsapp: document.getElementById("whatsapp").value.replace(/\D/g, ''),
+        service: selectedServices.join(", "),
+        projectSize: selectedServices.includes("Client Hunting") ? document.getElementById("projectSize").value : "Project Base",
+        skills: document.getElementById("skills").value.split(",").map(s => s.trim()),
+        portfolio: document.getElementById("portfolio").value,
+        availability: "Project Base",
+        notes: document.getElementById("notes").value,
+        status: editId ? state.candidates.find(x=>x.id===editId).status : "Pending"
+      };
+
+      if(editId) state.candidates = state.candidates.map(x => x.id === editId ? c : x);
+      else state.candidates.unshift(c);
+
+      saveData();
+      document.getElementById("candidateForm").reset();
+      document.getElementById("editId").value = "";
+      document.getElementById("saveBtn").textContent = "Save";
+      document.getElementById("cancelEdit").classList.add("hidden");
+      checkboxes.forEach(cb => cb.checked = false);
+      document.getElementById("adminServiceTrigger").textContent = "Select Services...";
+      
+      renderAll(); renderOverviewSkills();
+      alert("Record Saved Successfully!");
+    }
+
+    document.getElementById("cancelEdit").onclick = () => {
+      document.getElementById("candidateForm").reset();
+      document.getElementById("editId").value = "";
+      document.getElementById("saveBtn").textContent = "Save";
+      document.getElementById("cancelEdit").classList.add("hidden");
+      document.querySelectorAll('#adminServiceOptions input[type="checkbox"]').forEach(cb => cb.checked = false);
+      document.getElementById("adminServiceTrigger").textContent = "Select Services...";
+    }
+
+    // Backup aur Export Functions
+    document.getElementById("exportBtn").onclick = () => {
+      const data = JSON.stringify(state, null, 2);
+      const blob = new Blob([data], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "leaders-group-backup.json";
+      a.click();
+      URL.revokeObjectURL(url);
+    };
+
+    document.getElementById("exportCsvBtn").onclick = () => {
+      let csv = "Name,WhatsApp,Services,Project Size,Skills,Status\n";
+      state.candidates.forEach(c => {
+        csv += `"${c.name}","${c.whatsapp}","${c.service}","${c.projectSize}","${(c.skills||[]).join(' | ')}","${c.status}"\n`;
+      });
+      const blob = new Blob([csv], { type: "text/csv" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "leaders-group-data.csv";
+      a.click();
+      URL.revokeObjectURL(url);
+    };
+
+    document.getElementById("importInput").onchange = (e) => {
+      const file = e.target.files[0];
+      if(!file) return;
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        try {
+          const imported = JSON.parse(event.target.result);
+          if(imported.candidates) state.candidates = imported.candidates;
+          if(imported.services) state.services = imported.services;
+          saveData(); renderServices(); renderAdminLists(); renderAll(); renderOverviewSkills();
+          alert("Backup Restored!");
+        } catch(err) {
+          alert("Invalid Backup File");
+        }
+      };
+      reader.readAsText(file);
+      e.target.value = "";
+    }
+  }
+</script>
+</body>
+</html>
