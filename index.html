@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <meta name="theme-color" content="#080d14">
+  <title>Join Our Team</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="manifest" href="manifest.json">
+  <style>
+    .success-box { background: var(--panel); border: 1px solid var(--green); padding: 20px; border-radius: 12px; text-align: center; margin-top: 20px;}
+    .success-box h2 { color: var(--green); margin-bottom: 10px; }
+    .success-box p { color: var(--muted); font-size: 14px; margin-bottom: 15px;}
+    #previewText { background: var(--bg); padding: 10px; border-radius: 8px; font-size: 12px; color: var(--white); text-align: left; white-space: pre-wrap; margin-bottom: 15px; font-family: monospace;}
+    
+    /* CUSTOM MULTI-SELECT DESIGN */
+    .custom-select { position: relative; user-select: none; }
+    .custom-select-trigger {
+      width: 100%; background: var(--bg); border: 1px solid var(--border); color: var(--white);
+      padding: 13px; border-radius: 10px; font-size: 15px; min-height: 48px;
+      display: flex; justify-content: space-between; align-items: center; cursor: pointer;
+    }
+    .custom-select-trigger:after { content: '▼'; font-size: 10px; color: var(--muted); }
+    .custom-options {
+      display: none; position: absolute; top: 100%; left: 0; right: 0;
+      background: var(--panel); border: 1px solid var(--border); border-radius: 10px;
+      margin-top: 5px; z-index: 100; max-height: 200px; overflow-y: auto;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    }
+    .custom-select.open .custom-options { display: block; }
+    .custom-option {
+      padding: 12px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; cursor: pointer;
+    }
+    .custom-option:last-child { border-bottom: none; }
+    .custom-option input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--green); cursor: pointer; }
+    .custom-option label { margin: 0; font-size: 14px; color: var(--white); cursor: pointer; flex: 1; }
+  </style>
+</head>
+<body>
+
+<header class="topbar">
+  <div>
+    <h1>JOIN OUR TEAM</h1>
+    <p>DIGITAL SERVICES & CLIENT HUNTING</p>
+  </div>
+</header>
+
+<main class="container">
+  <section class="panel" id="formSection">
+    <div class="section-heading">
+      <div><h2>Fill Your Details</h2><p>Strictly project-based work</p></div>
+    </div>
+
+    <form id="publicForm">
+      <label>Full Name *</label>
+      <input id="p_name" required placeholder="Your full name">
+
+      <label>WhatsApp Number *</label>
+      <input id="p_whatsapp" required placeholder="(with country code)">
+
+      <label>Services / Categories *</label>
+      
+      <!-- CUSTOM MULTI SELECT START -->
+      <div class="custom-select" id="serviceDropdown">
+        <div class="custom-select-trigger" id="serviceTrigger">Select Services...</div>
+        <div class="custom-options">
+          <label class="custom-option"><input type="checkbox" value="Client Hunting"> Client Hunting (Top Priority)</label>
+          <label class="custom-option"><input type="checkbox" value="Website Development"> Website Development</label>
+          <label class="custom-option"><input type="checkbox" value="WordPress Development"> WordPress Development</label>
+          <label class="custom-option"><input type="checkbox" value="App Development (iOS/Android)"> App Development (iOS/Android)</label>
+          <label class="custom-option"><input type="checkbox" value="AI Agent Development"> AI Agent Development</label>
+          <label class="custom-option"><input type="checkbox" value="Business Automation"> Business Automation</label>
+          <label class="custom-option"><input type="checkbox" value="Graphic Design"> Graphic Design</label>
+          <label class="custom-option"><input type="checkbox" value="UI/UX Design"> UI/UX Design</label>
+          <label class="custom-option"><input type="checkbox" value="Video Editing"> Video Editing</label>
+          <label class="custom-option"><input type="checkbox" value="Digital Marketing"> Digital Marketing</label>
+          <label class="custom-option"><input type="checkbox" value="SEO (Search Engine Optimization)"> SEO</label>
+          <label class="custom-option"><input type="checkbox" value="Social Media Management"> Social Media Management</label>
+          <label class="custom-option"><input type="checkbox" value="Content Writing"> Content Writing</label>
+          <label class="custom-option"><input type="checkbox" value="Copywriting"> Copywriting</label>
+          <label class="custom-option"><input type="checkbox" value="Virtual Assistant"> Virtual Assistant</label>
+          <label class="custom-option"><input type="checkbox" value="Data Entry"> Data Entry</label>
+          <label class="custom-option"><input type="checkbox" value="Lead Generation"> Lead Generation</label>
+        </div>
+      </div>
+      <!-- CUSTOM MULTI SELECT END -->
+
+      <!-- Client Hunting Percentage Area -->
+      <div id="clientHunterFields" class="hidden" style="background: rgba(165,255,63,0.05); padding: 10px; border-radius: 8px; border: 1px solid var(--green); margin-top: 10px;">
+        <label style="color: var(--green); margin-top: 0;">Project Size & Commission</label>
+          <p style="font-size: 13px; color: var(--white); margin-bottom: 5px;">Small Project (20% Commission)</p>
+          <p style="font-size: 13px; color: var(--white);">Big Project (30% Commission)</p>
+      </div>
+
+      <div id="availabilityFields">
+        <label>Availability</label>
+        <select id="p_availability">
+          <option value="Project Base" selected>Project Base</option>
+        </select>
+      </div>
+
+      <label>Skills / Expertise *</label>
+      <textarea id="p_skills" required placeholder="Your skills (e.g., Lead Gen, HTML, Design)"></textarea>
+
+      <label>Portfolio / LinkedIn Link</label>
+      <input id="p_portfolio" type="url" placeholder="https://...">
+
+      <label>Notes</label>
+      <textarea id="p_notes" placeholder="Any additional information..."></textarea>
+
+      <div class="form-actions">
+        <button type="submit" class="primary-btn">Submit & Send to Admin</button>
+      </div>
+    </form>
+  </section>
+
+  <section class="panel hidden" id="successSection">
+    <div class="success-box">
+      <h2>✅ Data Ready!</h2>
+      <p>Click the button below to send this data to our Admin via WhatsApp.</p>
+      <div id="previewText"></div>
+      <a id="waSendBtn" href="#" target="_blank" class="primary-btn" style="display:block; text-decoration:none; margin-bottom:10px; text-align:center; padding:12px;">Send via WhatsApp</a>
+      <button id="copyBtn" class="outline-btn" style="width:100%;">Copy Details (Manual)</button>
+    </div>
+  </section>
+</main>
+
+<div id="toast" class="toast"></div>
+
+<script>
+  const ADMIN_WA_NUMBER = "923144005234"; 
+  
+  const form = document.getElementById('publicForm');
+  const formSection = document.getElementById('formSection');
+  const successSection = document.getElementById('successSection');
+  
+  const dropdown = document.getElementById('serviceDropdown');
+  const trigger = document.getElementById('serviceTrigger');
+  const checkboxes = document.querySelectorAll('.custom-options input[type="checkbox"]');
+  
+  const clientHunterFields = document.getElementById('clientHunterFields');
+  const availabilityFields = document.getElementById('availabilityFields');
+
+  trigger.addEventListener('click', () => {
+    dropdown.classList.toggle('open');
+  });
+
+  document.addEventListener('click', (e) => {
+    if (!dropdown.contains(e.target)) dropdown.classList.remove('open');
+  });
+
+  checkboxes.forEach(cb => {
+    cb.addEventListener('change', () => {
+      const selected = Array.from(checkboxes).filter(c => c.checked).map(c => c.value);
+      
+      if (selected.length === 0) trigger.textContent = "Select Services...";
+      else if (selected.length === 1) trigger.textContent = selected[0];
+      else trigger.textContent = `${selected.length} Services Selected`;
+      
+      if (selected.includes("Client Hunting")) {
+        clientHunterFields.classList.remove('hidden');
+        availabilityFields.classList.add('hidden');
+      } else {
+        clientHunterFields.classList.add('hidden');
+        availabilityFields.classList.remove('hidden');
+      }
+    });
+  });
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    
+    const selectedServices = Array.from(checkboxes).filter(c => c.checked).map(c => c.value);
+    if (selectedServices.length === 0) {
+      alert("Kam az kam ek service select karein!");
+      return;
+    }
+
+    const isClientHunter = selectedServices.includes("Client Hunting");
+
+    const data = {
+      Name: document.getElementById('p_name').value,
+      WhatsApp: document.getElementById('p_whatsapp').value.replace(/\D/g, ''),
+      Service: selectedServices.join(", "),
+      ProjectSize: isClientHunter ? "As per project size" : "Project Base",
+      Availability: "Project Base", 
+      Skills: document.getElementById('p_skills').value,
+      Portfolio: document.getElementById('p_portfolio').value || "None",
+      Notes: document.getElementById('p_notes').value || "None"
+    };
+
+    const textToSend = 
+`Name: ${data.Name}
+WhatsApp: ${data.WhatsApp}
+Service: ${data.Service}
+ProjectSize: ${data.ProjectSize}
+Availability: ${data.Availability}
+Skills: ${data.Skills}
+Portfolio: ${data.Portfolio}
+Notes: ${data.Notes}`;
+
+    document.getElementById('previewText').textContent = textToSend;
+    const waUrl = `https://wa.me/${ADMIN_WA_NUMBER}?text=${encodeURIComponent(textToSend)}`;
+    document.getElementById('waSendBtn').href = waUrl;
+
+    document.getElementById('copyBtn').onclick = () => {
+      navigator.clipboard.writeText(textToSend).then(() => {
+        document.getElementById('copyBtn').textContent = "Copied!";
+        setTimeout(() => document.getElementById('copyBtn').textContent = "Copy Details (Manual)", 2000);
+      });
+    };
+
+    formSection.classList.add('hidden');
+    successSection.classList.remove('hidden');
+  });
+</script>
+</body>
+</html>
