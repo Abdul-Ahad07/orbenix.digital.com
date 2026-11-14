@@ -4,16 +4,15 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
   <meta name="theme-color" content="#080d14">
-  <title>Join Our Team</title>
+  <title>Join Our Team | Leaders Group Digital</title>
   <link rel="stylesheet" href="style.css">
-  <link rel="manifest" href="manifest.json">
   <style>
     .success-box { background: var(--panel); border: 1px solid var(--green); padding: 20px; border-radius: 12px; text-align: center; margin-top: 20px;}
     .success-box h2 { color: var(--green); margin-bottom: 10px; }
     .success-box p { color: var(--muted); font-size: 14px; margin-bottom: 15px;}
     #previewText { background: var(--bg); padding: 10px; border-radius: 8px; font-size: 12px; color: var(--white); text-align: left; white-space: pre-wrap; margin-bottom: 15px; font-family: monospace;}
     
-    /* CUSTOM MULTI-SELECT DESIGN */
+    /* Custom Dropdown */
     .custom-select { position: relative; user-select: none; }
     .custom-select-trigger {
       width: 100%; background: var(--bg); border: 1px solid var(--border); color: var(--white);
@@ -40,8 +39,8 @@
 
 <header class="topbar">
   <div>
-    <h1>JOIN OUR TEAM</h1>
-    <p>DIGITAL SERVICES & CLIENT HUNTING</p>
+    <h1>LEADERS GROUP DIGITAL</h1>
+    <p>JOIN OUR TEAM</p>
   </div>
 </header>
 
@@ -60,21 +59,20 @@
 
       <label>Services / Categories *</label>
       
-      <!-- CUSTOM MULTI SELECT START -->
       <div class="custom-select" id="serviceDropdown">
         <div class="custom-select-trigger" id="serviceTrigger">Select Services...</div>
         <div class="custom-options">
           <label class="custom-option"><input type="checkbox" value="Client Hunting"> Client Hunting (Top Priority)</label>
           <label class="custom-option"><input type="checkbox" value="Website Development"> Website Development</label>
           <label class="custom-option"><input type="checkbox" value="WordPress Development"> WordPress Development</label>
-          <label class="custom-option"><input type="checkbox" value="App Development (iOS/Android)"> App Development (iOS/Android)</label>
+          <label class="custom-option"><input type="checkbox" value="App Development"> App Development</label>
           <label class="custom-option"><input type="checkbox" value="AI Agent Development"> AI Agent Development</label>
           <label class="custom-option"><input type="checkbox" value="Business Automation"> Business Automation</label>
           <label class="custom-option"><input type="checkbox" value="Graphic Design"> Graphic Design</label>
           <label class="custom-option"><input type="checkbox" value="UI/UX Design"> UI/UX Design</label>
           <label class="custom-option"><input type="checkbox" value="Video Editing"> Video Editing</label>
           <label class="custom-option"><input type="checkbox" value="Digital Marketing"> Digital Marketing</label>
-          <label class="custom-option"><input type="checkbox" value="SEO (Search Engine Optimization)"> SEO</label>
+          <label class="custom-option"><input type="checkbox" value="SEO"> SEO</label>
           <label class="custom-option"><input type="checkbox" value="Social Media Management"> Social Media Management</label>
           <label class="custom-option"><input type="checkbox" value="Content Writing"> Content Writing</label>
           <label class="custom-option"><input type="checkbox" value="Copywriting"> Copywriting</label>
@@ -83,30 +81,26 @@
           <label class="custom-option"><input type="checkbox" value="Lead Generation"> Lead Generation</label>
         </div>
       </div>
-      <!-- CUSTOM MULTI SELECT END -->
 
-      <!-- Client Hunting Percentage Area -->
       <div id="clientHunterFields" class="hidden" style="background: rgba(165,255,63,0.05); padding: 10px; border-radius: 8px; border: 1px solid var(--green); margin-top: 10px;">
         <label style="color: var(--green); margin-top: 0;">Project Size & Commission</label>
           <p style="font-size: 13px; color: var(--white); margin-bottom: 5px;">Small Project (20% Commission)</p>
           <p style="font-size: 13px; color: var(--white);">Big Project (30% Commission)</p>
       </div>
 
-      <div id="availabilityFields">
-        <label>Availability</label>
-        <select id="p_availability">
-          <option value="Project Base" selected>Project Base</option>
-        </select>
-      </div>
+      <label>Availability</label>
+      <select id="p_availability">
+        <option value="Project Base" selected>Project Base</option>
+      </select>
 
       <label>Skills / Expertise *</label>
-      <textarea id="p_skills" required placeholder="Your skills (e.g., Lead Gen, HTML, Design)"></textarea>
+      <textarea id="p_skills" required placeholder="Your skills..."></textarea>
 
       <label>Portfolio / LinkedIn Link</label>
       <input id="p_portfolio" type="url" placeholder="https://...">
 
       <label>Notes</label>
-      <textarea id="p_notes" placeholder="Any additional information..."></textarea>
+      <textarea id="p_notes" placeholder="Additional info..."></textarea>
 
       <div class="form-actions">
         <button type="submit" class="primary-btn">Submit & Send to Admin</button>
@@ -117,15 +111,13 @@
   <section class="panel hidden" id="successSection">
     <div class="success-box">
       <h2>✅ Data Ready!</h2>
-      <p>Click the button below to send this data to our Admin via WhatsApp.</p>
+      <p>Click the button below to send this data to Admin via WhatsApp.</p>
       <div id="previewText"></div>
       <a id="waSendBtn" href="#" target="_blank" class="primary-btn" style="display:block; text-decoration:none; margin-bottom:10px; text-align:center; padding:12px;">Send via WhatsApp</a>
-      <button id="copyBtn" class="outline-btn" style="width:100%;">Copy Details (Manual)</button>
+      <button id="copyBtn" class="outline-btn" style="width:100%;">Copy Details</button>
     </div>
   </section>
 </main>
-
-<div id="toast" class="toast"></div>
 
 <script>
   const ADMIN_WA_NUMBER = "923144005234"; 
@@ -141,9 +133,7 @@
   const clientHunterFields = document.getElementById('clientHunterFields');
   const availabilityFields = document.getElementById('availabilityFields');
 
-  trigger.addEventListener('click', () => {
-    dropdown.classList.toggle('open');
-  });
+  trigger.addEventListener('click', () => dropdown.classList.toggle('open'));
 
   document.addEventListener('click', (e) => {
     if (!dropdown.contains(e.target)) dropdown.classList.remove('open');
@@ -206,7 +196,7 @@ Notes: ${data.Notes}`;
     document.getElementById('copyBtn').onclick = () => {
       navigator.clipboard.writeText(textToSend).then(() => {
         document.getElementById('copyBtn').textContent = "Copied!";
-        setTimeout(() => document.getElementById('copyBtn').textContent = "Copy Details (Manual)", 2000);
+        setTimeout(() => document.getElementById('copyBtn').textContent = "Copy Details", 2000);
       });
     };
 
